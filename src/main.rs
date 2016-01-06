@@ -1,4 +1,5 @@
 use std::env;
+use std::io;
 use std::io::Read;
 use std::fs::File;
 
@@ -10,7 +11,7 @@ macro_rules! fatal {
     ($($arg:expr),+) => {
         print!("\n*** FATAL ERROR: ");
         println!($($arg),+);
-        panic!("FATAL ERROR");
+        panic!();
     };
 }
 
@@ -40,12 +41,8 @@ impl VM {
         }
     }
     
-    pub fn load(&mut self, filename: String) {
-        let filename2 = filename.clone();
-        let mut file = match File::open(filename) {
-            Ok(f) => { f }
-            _     => { fatal!("cannot read program file {}", filename2); }
-        };
+    pub fn load(&mut self, filename: String) -> io::Result<()> {
+        let mut file = try!(File::open(filename));
         let mut buffer = [0; 2];
         // programs are loaded into memory starting at address 0
         let mut i = 0;
@@ -59,6 +56,7 @@ impl VM {
                 _ => { break; }
             };
         }
+        Ok(())
     }
     
     fn get(&mut self) -> u16 {
@@ -256,6 +254,10 @@ fn main() {
     let program = vec![9, 32768, 32769, 65, 19, 32768];
     vm.init(&program);
     let filename = env::args().nth(1).unwrap_or("challenge.bin".to_owned());
-    vm.load(filename);
+    let filename2 = filename.clone();
+    match vm.load(filename) {
+        Ok(_) => {}
+        Err(_) => { fatal!("cannot read program file {}", filename2); }
+    }
     vm.run();
 }
