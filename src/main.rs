@@ -34,7 +34,7 @@ impl VM {
         }
     }
     
-    pub fn init(&mut self, program: Vec<u16>) {
+    pub fn init(&mut self, program: &[u16]) {
         for (i, v) in program.iter().enumerate() {
             self.memory[i] = *v;
         }
@@ -253,8 +253,8 @@ impl VM {
 
 fn main() {
     let mut vm = VM::new();
-    //let program = vec![9, 32768, 32769, 65, 19, 32768];
-    //vm.init(program);
+    let program = vec![9, 32768, 32769, 65, 19, 32768];
+    vm.init(&program);
     let filename = env::args().nth(1).unwrap_or("challenge.bin".to_owned());
     vm.load(filename);
     vm.run();
