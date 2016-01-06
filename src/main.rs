@@ -43,8 +43,8 @@ impl VM {
     pub fn load(&mut self, filename: String) {
         let filename2 = filename.clone();
         let mut file = match File::open(filename) {
-            Ok(f) => f
-            _     => fatal!("cannot read program file {}", filename2);
+            Ok(f) => { f }
+            _     => { fatal!("cannot read program file {}", filename2); }
         };
         let mut buffer = [0; 2];
         // programs are loaded into memory starting at address 0
@@ -56,7 +56,7 @@ impl VM {
                     self.memory[i] = ((buffer[1] as u16) << 8) | buffer[0] as u16;
                     i += 1;
                 }
-                _ => break;
+                _ => { break; }
             };
         }
     }
@@ -64,13 +64,15 @@ impl VM {
     fn get(&mut self) -> u16 {
         let a = self.memory[self.pc] as usize;
         self.pc += 1;
-        match a {
+        if a < MEM_SIZE {
             // numbers 0..32767 mean a literal value
-            0 ... MEM_SIZE - 1 => a as u16
+            a as u16
+        } else if a - MEM_SIZE < NUM_REGISTERS {
             // numbers 32768..32775 instead mean registers 0..7
-            MEM_SIZE ... MEM_SIZE + NUM_REGISTERS - 1 => self.registers[a - MEM_SIZE]
+            self.registers[a - MEM_SIZE]
+        } else {
             // numbers 32776..65535 are invalid
-            _ => fatal!("bad memory value: {} (#{})\n", a, a - MEM_SIZE);
+            fatal!("bad memory value: {} (#{})\n", a, a - MEM_SIZE);
         }
     }
     
@@ -216,8 +218,8 @@ impl VM {
                 18 => { // RET
                     // remove the top element from the stack and jump to it; empty stack = halt
                     match self.stack.pop() {
-                        Some(v) => self.pc = v as usize;
-                        None    => break;
+                        Some(v) => { self.pc = v as usize; }
+                        None    => { break; }
                     }
                 }
                 19 => { // OUT a
